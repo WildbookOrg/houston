@@ -109,7 +109,7 @@ class EDMManagerEndpointMixin(object):
 
 class EDMManagerUserMixin(object):
     def check_user_login(self, username, password):
-        self.ensure_initialed()
+        self.ensure_initialized()
 
         success = False
         for target in self.targets:
@@ -183,7 +183,7 @@ class EDMManager(EDMManagerEndpointMixin, EDMManagerUserMixin, EDMManagerEncount
         app.edm = self
 
         if pre_initialize:
-            self.ensure_initialed()
+            self.ensure_initialized()
 
     def _parse_config_edm_uris(self):
         edm_uri_dict = self.app.config.get('EDM_URIS', None)
@@ -283,7 +283,7 @@ class EDMManager(EDMManagerEndpointMixin, EDMManagerUserMixin, EDMManagerEncount
             )
             log.info('Created authenticated session for EDM target %r' % (target,))
 
-    def ensure_initialed(self):
+    def ensure_initialized(self):
         if not self.initialized:
             log.info('Initializing EDM')
             self._parse_config_edm_uris()
@@ -313,7 +313,7 @@ class EDMManager(EDMManagerEndpointMixin, EDMManagerUserMixin, EDMManagerEncount
         verbose=True
     ):
         if ensure_initialized:
-            self.ensure_initialed()
+            self.ensure_initialized()
 
         method = method.lower()
         assert method in ['get', 'post', 'delete', 'put', 'patch']

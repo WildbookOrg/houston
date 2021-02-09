@@ -45,9 +45,9 @@ class SubmissionManager(object):
         self.mime_type_whitelist_guid = None
 
         if pre_initialize:
-            self.ensure_initialed()
+            self.ensure_initialized()
 
-    def ensure_initialed(self):
+    def ensure_initialized(self):
         if not self.initialized:
             assert self.gl is None
 
@@ -151,7 +151,7 @@ class SubmissionManager(object):
         project = None
 
         if remote:
-            self.ensure_initialed()
+            self.ensure_initialized()
 
             projects = self.gl.projects.list(search=str(submission.guid))
             if len(projects) > 0:
@@ -261,7 +261,7 @@ class SubmissionManager(object):
         if submission is None:
             from app.extensions import db
 
-            self.ensure_initialed()
+            self.ensure_initialized()
 
             # Try to find remote project by Submission UUID
             projects = self.gl.projects.list(search=str(submission_uuid))
