@@ -278,9 +278,16 @@ class EDMManager(EDMManagerEndpointMixin, EDMManagerUserMixin, EDMManagerEncount
             assert password is not None, message
 
             self.sessions[target] = requests.Session()
-            self._get(
+            response = self._get(
                 'session.login', email, password, target=target, ensure_initialized=False
             )
+            assert (
+                not isinstance(response, requests.models.Response) or response.ok
+            ), 'EDM Authentication for %s returned non-OK code: %d' % (
+                target,
+                response.status_code,
+            )
+
             log.info('Created authenticated session for EDM target %r' % (target,))
 
     def ensure_initialized(self):
