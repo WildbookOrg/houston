@@ -8,7 +8,6 @@ import pytest
 import app as target_module
 from app import (
     _ensure_storage,
-    CONFIG_NAME_MAPPER,
     configure_from_cli,
     configure_from_config_file,
     configure_using_houston_flask_config,
@@ -110,14 +109,14 @@ class TestConfigureFromConfigFile:
         with pytest.raises(KeyError):
             configure_from_config_file(app, flask_config_name)
 
-    def test_ImportError_in_flask_config(self, monkeypatch):
+    @pytest.mark.parametrize('flask_config_name', ['local', 'testing'])
+    def test_ImportError_in_flask_config(self, monkeypatch, flask_config_name):
         """must exit with returncode 1 on configuration importing issues"""
         sys_module = mock.MagicMock()
         monkeypatch.setattr(target_module, 'sys', sys_module)
 
         app = mock.MagicMock()
         monkeypatch.delenv('FLASK_CONFIG', raising=False)
-        flask_config_name = 'local'
 
         class TestException(Exception):
             pass
@@ -128,11 +127,17 @@ class TestConfigureFromConfigFile:
         sys_module.exit.side_effect = TestException()
 
         # Target
-        with pytest.raises(TestException):
+        with pytest.raises(
+            (
+                ImportError,
+                TestException,
+            )
+        ):
             configure_from_config_file(app, flask_config_name)
 
-        # Check that we've logged an error
-        app.logger.error.assert_called_once()
+        if flask_config_name == 'local':
+            # Check that we've logged an error
+            app.logger.error.assert_called_once()
 
 
 class TestConfigureFromCli:
@@ -241,21 +246,3 @@ def test_create_app_passing_FLASK_CONFIG_env(monkeypatch, flask_config_name):
         monkeypatch.setattr(ProductionConfig, 'SQLALCHEMY_DATABASE_URI', 'sqlite://')
         monkeypatch.setattr(ProductionConfig, 'SECRET_KEY', 'secret', raising=False)
     create_app(testing=True)
-
-
-def test_create_app_with_conflicting_config(monkeypatch):
-    monkeypatch.setenv('FLASK_CONFIG', 'production')
-    with pytest.raises(AssertionError):
-        create_app('development', testing=True)
-
-
-def test_create_app_with_non_existing_config():
-    with pytest.raises(KeyError):
-        create_app('non-existing-config', testing=True)
-
-
-def test_create_app_with_broken_import_config():
-    CONFIG_NAME_MAPPER['broken-import-config'] = 'broken-import-config'
-    with pytest.raises(ImportError):
-        create_app('broken-import-config', testing=True)
-    del CONFIG_NAME_MAPPER['broken-import-config']
