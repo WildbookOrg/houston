@@ -62,6 +62,18 @@ class TestConfigureFromConfigFile:
         expected_args = ('local_config.LocalConfig',)
         app.config.from_object.assert_called_with(*expected_args)
 
+    def test_with_flask_config_name_param(self, monkeypatch):
+        """must use the given name"""
+        app = mock.MagicMock()
+        monkeypatch.delenv('FLASK_CONFIG', raising=False)
+        flask_config_name = 'testing'
+
+        # Target
+        configure_from_config_file(app, flask_config_name)
+
+        expected_args = ('config.TestingConfig',)
+        app.config.from_object.assert_called_with(*expected_args)
+
 
 def test_create_app():
     try:
