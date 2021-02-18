@@ -1,8 +1,48 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=missing-docstring
+import pretend
 import pytest
 
-from app import CONFIG_NAME_MAPPER, create_app
+import app as target_module
+from app import (
+    _ensure_storage,
+    CONFIG_NAME_MAPPER,
+    create_app,
+)
+
+
+class TestEnsureStorage:
+    """Tests _ensure_storage"""
+
+    def make_paths(self, tmp_path):
+        return {
+            'PROJECT_DATABASE_PATH': tmp_path / 'sql',
+            'SUBMISSIONS_DATABASE_PATH': tmp_path / 'sub',
+            'ASSET_DATABASE_PATH': tmp_path / 'ass',
+        }
+
+    def test_without_app(self, tmp_path, monkeypatch):
+        # Stub values to isolate the test
+        paths = self.make_paths(tmp_path)
+        BaseConfig = pretend.stub(**{k: str(v) for k, v in paths.items()})
+        monkeypatch.setattr(target_module, 'BaseConfig', BaseConfig)
+
+        # Target
+        _ensure_storage()
+
+        for path in paths.values():
+            assert path.exists()
+
+    def test_with_app(self, tmp_path, monkeypatch):
+        paths = self.make_paths(tmp_path)
+        config = {k: str(v) for k, v in paths.items()}
+        app = pretend.stub(config=config)
+
+        # Target
+        _ensure_storage(app)
+
+        for path in paths.values():
+            assert path.exists()
 
 
 def test_create_app():

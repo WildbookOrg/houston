@@ -6,6 +6,7 @@ IPython
 mock
 
 pre-commit
+pretend
 pytest >= 3.3.1
 pytest-cov
 pytest-random-order
