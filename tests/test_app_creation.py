@@ -98,6 +98,16 @@ class TestConfigureFromConfigFile:
 
         assert exc_info.match(r'.*both set and are not the same.')
 
+    def test_invalid_flask_config_name(self, monkeypatch):
+        """must raise KeyError with config name mapper"""
+        app = mock.MagicMock()
+        monkeypatch.delenv('FLASK_CONFIG', raising=False)
+        flask_config_name = 'does-not-exists'
+
+        # Target
+        with pytest.raises(KeyError):
+            configure_from_config_file(app, flask_config_name)
+
 
 def test_create_app():
     try:
