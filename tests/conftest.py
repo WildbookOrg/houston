@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+
 import sqlalchemy
 import pytest
 import uuid
@@ -29,12 +31,24 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('gitlab_remote_login_pat', value, scope='session')
 
 
+@pytest.fixture(autouse=True)
+def unset_FLASK_CONFIG(monkeypatch):
+    """Don't allow a globally set ``FLASK_CONFIG`` environ var
+    to influence the testing context
+
+    """
+    monkeypatch.delenv('FLASK_CONFIG', raising=False)
+
+
 @pytest.fixture(scope='session')
 def flask_app(gitlab_remote_login_pat):
 
     config_override = {}
     if gitlab_remote_login_pat is not None:
         config_override['GITLAB_REMOTE_LOGIN_PAT'] = gitlab_remote_login_pat
+
+    # Don't allow a globally set ``FLASK_CONFIG`` environ var influence the testing context
+    del os.environ['FLASK_CONFIG']
 
     app = create_app(flask_config_name='testing', config_override=config_override)
     from app.extensions import db
