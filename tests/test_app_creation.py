@@ -86,6 +86,18 @@ class TestConfigureFromConfigFile:
         expected_args = ('config.TestingConfig',)
         app.config.from_object.assert_called_with(*expected_args)
 
+    def test_conflicting_flask_config(self, monkeypatch):
+        """must raise AssertionError on conflicting names"""
+        app = mock.MagicMock()
+        flask_config_name = 'testing'
+        monkeypatch.setenv('FLASK_CONFIG', 'production')
+
+        # Target
+        with pytest.raises(AssertionError) as exc_info:
+            configure_from_config_file(app, flask_config_name)
+
+        assert exc_info.match(r'.*both set and are not the same.')
+
 
 def test_create_app():
     try:
