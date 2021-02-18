@@ -9,6 +9,7 @@ import app as target_module
 from app import (
     _ensure_storage,
     CONFIG_NAME_MAPPER,
+    configure_from_cli,
     configure_from_config_file,
     create_app,
 )
@@ -131,6 +132,65 @@ class TestConfigureFromConfigFile:
 
         # Check that we've logged an error
         app.logger.error.assert_called_once()
+
+
+class TestConfigureFromCli:
+    """Testing configure_from_cli"""
+
+    def test_success(self):
+        """must override any settings already in the config"""
+        app = mock.MagicMock()
+        app.config = {
+            'foo': 'foo',
+            'bar': 'bar',
+            #: not overridden
+            'baz': 'baz',
+        }
+        override = {
+            'foo': 'oof',
+            'bar': 'rab',
+            #: completely new setting
+            'smoo': 'ooms',
+        }
+
+        # Target
+        configure_from_cli(app, override)
+
+        # Test for overrides
+        expected_config = override.copy()
+        for k, v in app.config.items():
+            expected_config.setdefault(k, v)
+        assert app.config == expected_config
+
+    def test_redacted(self, monkeypatch):
+        """must redact sensative settings from the logs"""
+        app = mock.MagicMock()
+        app.config = {
+            'EDM_AUTHENTICATIONS': 'foo',
+        }
+        override = {
+            'EDM_AUTHENTICATIONS': 'bar',
+        }
+
+        # mock and patch logger usage
+        log = mock.MagicMock()
+        monkeypatch.setattr(target_module, 'log', log)
+
+        # Target
+        configure_from_cli(app, override)
+
+        # Test for override
+        expected_config = override.copy()
+        for k, v in app.config.items():
+            expected_config.setdefault(k, v)
+        assert app.config == expected_config
+
+        # Test for log redaction
+        log.warning.assert_called_once()
+        expected_log_snippet = "OVERRIDE: key='EDM_AUTHENTICATIONS' value='<REDACTED>'"
+        # FIXME: python >= 3.8
+        # assert expected_log_snippet in log.warning.call_args.args[0]
+        assert expected_log_snippet in log.warning.call_args[0][0]
 
 
 def test_create_app():
