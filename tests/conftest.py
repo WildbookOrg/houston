@@ -17,6 +17,11 @@ def pytest_addoption(parser):
         default=[],
         help=('Specify additional config argument for GitLab'),
     )
+    parser.addoption(
+        '--db-uri',
+        default=None,
+        help='database connection uri e.g. postgresql://user:pass@host/db',
+    )
 
 
 def pytest_generate_tests(metafunc):
@@ -41,11 +46,14 @@ def unset_FLASK_CONFIG(monkeypatch):
 
 
 @pytest.fixture(scope='session')
-def flask_app(gitlab_remote_login_pat):
+def flask_app(request, gitlab_remote_login_pat):
 
     config_override = {}
     if gitlab_remote_login_pat is not None:
         config_override['GITLAB_REMOTE_LOGIN_PAT'] = gitlab_remote_login_pat
+
+    if request.config.option.db_uri is not None:
+        config_override['SQLALCHEMY_DATABASE_URI'] = request.config.option.db_uri
 
     # Don't allow a globally set ``FLASK_CONFIG`` environ var influence the testing context
     del os.environ['FLASK_CONFIG']
