@@ -108,6 +108,30 @@ class TestConfigureFromConfigFile:
         with pytest.raises(KeyError):
             configure_from_config_file(app, flask_config_name)
 
+    def test_ImportError_in_flask_config(self, monkeypatch):
+        """must exit with returncode 1 on configuration importing issues"""
+        sys_module = mock.MagicMock()
+        monkeypatch.setattr(target_module, 'sys', sys_module)
+
+        app = mock.MagicMock()
+        monkeypatch.delenv('FLASK_CONFIG', raising=False)
+        flask_config_name = 'local'
+
+        class TestException(Exception):
+            pass
+
+        # set app to raise ImportError
+        app.config.from_object.side_effect = ImportError()
+        # set 'sys.exit()' to raise a controlled error
+        sys_module.exit.side_effect = TestException()
+
+        # Target
+        with pytest.raises(TestException):
+            configure_from_config_file(app, flask_config_name)
+
+        # Check that we've logged an error
+        app.logger.error.assert_called_once()
+
 
 def test_create_app():
     try:
