@@ -11,6 +11,7 @@ from app import (
     CONFIG_NAME_MAPPER,
     configure_from_cli,
     configure_from_config_file,
+    configure_using_houston_flask_config,
     create_app,
 )
 
@@ -191,6 +192,25 @@ class TestConfigureFromCli:
         # FIXME: python >= 3.8
         # assert expected_log_snippet in log.warning.call_args.args[0]
         assert expected_log_snippet in log.warning.call_args[0][0]
+
+
+def test_configure_using_houston_flask_config():
+    """must consume and replace the app config with a HoustonFlaskConfig instance"""
+    app = mock.MagicMock()
+    replaceable_config = {
+        'FOO': 'bar',
+        'BAR': 'baz',
+    }
+    app.config = replaceable_config
+
+    # Target
+    configure_using_houston_flask_config(app)
+
+    from app.extensions.config import HoustonFlaskConfig
+
+    assert isinstance(app.config, HoustonFlaskConfig)
+    for key, value in replaceable_config.items():
+        assert app.config[key] == value
 
 
 def test_create_app():
