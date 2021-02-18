@@ -74,6 +74,18 @@ class TestConfigureFromConfigFile:
         expected_args = ('config.TestingConfig',)
         app.config.from_object.assert_called_with(*expected_args)
 
+    def test_with_FLASK_CONFIG_envvar(self, monkeypatch):
+        """must use the FLASK_CONFIG env-var"""
+        app = mock.MagicMock()
+        flask_config_name = 'testing'
+        monkeypatch.setenv('FLASK_CONFIG', flask_config_name)
+
+        # Target
+        configure_from_config_file(app)  # note, no parameter
+
+        expected_args = ('config.TestingConfig',)
+        app.config.from_object.assert_called_with(*expected_args)
+
 
 def test_create_app():
     try:
