@@ -218,15 +218,6 @@ def test_configure_using_houston_flask_config():
         assert app.config[key] == value
 
 
-def test_create_app():
-    try:
-        create_app(testing=True)
-    except SystemExit:
-        # Clean git repository doesn't have `local_config.py`, so it is fine
-        # if we get SystemExit error.
-        pass
-
-
 @pytest.mark.parametrize('flask_config_name', ['production', 'development', 'testing'])
 def test_create_app_passing_flask_config_name(monkeypatch, flask_config_name):
     if flask_config_name == 'production':
