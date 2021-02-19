@@ -225,15 +225,25 @@ def test_create_app_passing_flask_config_name(monkeypatch, flask_config_name):
 
         monkeypatch.setattr(ProductionConfig, 'SQLALCHEMY_DATABASE_URI', 'sqlite://')
         monkeypatch.setattr(ProductionConfig, 'SECRET_KEY', 'secret', raising=False)
-    create_app(flask_config_name=flask_config_name, testing=True)
+
+    # Target
+    create_app(flask_config_name=flask_config_name)
+
+    # FIXME: What must a call do create app do to be considered successful?
+    #        Currently, we just test that the function runs...
 
 
-@pytest.mark.parametrize('flask_config_name', ['production', 'development', 'testing'])
-def test_create_app_passing_FLASK_CONFIG_env(monkeypatch, flask_config_name):
-    monkeypatch.setenv('FLASK_CONFIG', flask_config_name)
-    if flask_config_name == 'production':
+@pytest.mark.parametrize('flask_config', ['production', 'development', 'testing'])
+def test_create_app_passing_FLASK_CONFIG_env(monkeypatch, flask_config):
+    monkeypatch.setenv('FLASK_CONFIG', flask_config)
+    if flask_config == 'production':
         from config import ProductionConfig
 
         monkeypatch.setattr(ProductionConfig, 'SQLALCHEMY_DATABASE_URI', 'sqlite://')
         monkeypatch.setattr(ProductionConfig, 'SECRET_KEY', 'secret', raising=False)
-    create_app(testing=True)
+
+    # Target
+    create_app()
+
+    # FIXME: What must a call do create app do to be considered successful?
+    #        Currently, we just test that the function runs...

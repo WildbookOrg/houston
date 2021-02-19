@@ -135,9 +135,6 @@ def create_app(flask_config_name=None, config_override={}, testing=False, **kwar
     # Replace app.config (flask.Config) with our HoustonFlaskConfig version
     configure_using_houston_flask_config(app)
 
-    if testing:
-        return app
-
     # Initialize all extensions
     from . import extensions
 
