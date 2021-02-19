@@ -218,6 +218,7 @@ def test_configure_using_houston_flask_config():
         assert app.config[key] == value
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize('flask_config_name', ['production', 'development', 'testing'])
 def test_create_app_passing_flask_config_name(monkeypatch, flask_config_name):
     if flask_config_name == 'production':
@@ -233,6 +234,7 @@ def test_create_app_passing_flask_config_name(monkeypatch, flask_config_name):
     #        Currently, we just test that the function runs...
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize('flask_config', ['production', 'development', 'testing'])
 def test_create_app_passing_FLASK_CONFIG_env(monkeypatch, flask_config):
     monkeypatch.setenv('FLASK_CONFIG', flask_config)

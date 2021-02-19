@@ -150,7 +150,7 @@ def create_app(flask_config_name=None, config_override={}, testing=False, **kwar
 
     # Configure reverse proxy
     if app.config['REVERSE_PROXY_SETUP']:
-        app.wsgi_app = ProxyFix(app.wsgi_app)
+        app.wsgi_app = ProxyFix(app.wsgi_app)  # pragma: no cover
 
     return app
 
