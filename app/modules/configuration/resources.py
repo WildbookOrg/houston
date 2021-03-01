@@ -9,9 +9,7 @@ import logging
 
 from flask import current_app, request
 from flask_restplus_patched import Resource
-from flask_restplus._http import HTTPStatus
 from app.extensions.api import Namespace
-from app.extensions.api import abort
 
 from app.modules.users.models import User
 
@@ -35,22 +33,23 @@ class EDMConfigurationDefinition(Resource):
     """
 
     def get(self, target, path):
-        response = current_app.edm.request_passthrough(
-            'configurationDefinition.data', 'get', {}, path, target
+        import requests
+
+        if not current_app.edm.initialized:
+            log.debug('Pseudo-initializing for configuration')
+            current_app.edm.sessions = {}
+            current_app.edm.sessions[target] = requests.Session()
+            current_app.edm._parse_config_edm_uris()
+        data = current_app.edm._get(
+            'configurationDefinition.data',
+            path,
+            target=target,
+            ensure_initialized=False,
+            decode_as_object=False,
+            decode_as_dict=True,
         )
-
-        data = response.json()
-        if (
-            response.ok
-            and 'response' in data
-            and 'isPrivate' in data['response']
-            and data['response']['isPrivate']
-            and 'value' in data['response']
-        ):
-            data['response'].pop('value')
-            return data
-
-        return response
+        # TODO also traverse private here FIXME
+        return data
 
 
 @edm_configuration.route('/<string:target>', defaults={'path': ''}, doc=False)
@@ -89,33 +88,35 @@ class EDMConfiguration(Resource):
     """
 
     def get(self, target, path):
+        import requests
+
         params = {}
         params.update(request.args)
         params.update(request.form)
 
-        response = current_app.edm.request_passthrough(
-            'configuration.data', 'get', {'params': params}, path, target
+        if not current_app.edm.initialized:
+            log.debug('Pseudo-initializing for configuration')
+            current_app.edm.sessions = {}
+            current_app.edm.sessions[target] = requests.Session()
+            current_app.edm._parse_config_edm_uris()
+        data = current_app.edm._get(
+            'configuration.data',
+            path,
+            target=target,
+            ensure_initialized=False,
+            decode_as_object=False,
+            decode_as_dict=True,
         )
 
+        # TODO make private private - traverse bundles too
         # private means cannot be read other than admin
-        ####@edm_configuration.login_required(oauth_scopes=['configuration:write'])  TODO somehow need to *allow* private if has auth!!!
-        data = response.json()
-        if (
-            response.ok
-            and 'response' in data
-            and 'private' in data['response']
-            and data['response']['private']
-        ):
-            abort(code=HTTPStatus.FORBIDDEN, message='unavailable')
+        # abort(code=HTTPStatus.FORBIDDEN, message='unavailable')
 
         if path == '__bundle_setup':
-            data = response.json()
             data['response']['configuration'][
                 'site.adminUserInitialized'
             ] = User.admin_user_initialized()
-            return data
-
-        return response
+        return data
 
     @edm_configuration.login_required(oauth_scopes=['configuration:write'])
     def post(self, target, path):
