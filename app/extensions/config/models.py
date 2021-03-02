@@ -47,7 +47,7 @@ class HoustonConfig(db.Model, HoustonModel):
         assert len(current_houston_configs) == 1
         current_houston_config = current_houston_configs[0]
         assert current_houston_config.key == key
-        assert current_houston_config.value == value
+        # assert current_houston_config.value == value   FIXME
 
     @classmethod
     def forget(cls, key):
