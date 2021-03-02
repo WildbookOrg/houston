@@ -74,6 +74,7 @@ class EDMManagerEndpointMixin(object):
         },
         'configuration': {
             'data': '//v0/configuration/%s',
+            'init': '//v0/init?content=%s',
         },
         'configurationDefinition': {
             'data': '//v0/configurationDefinition/%s',
@@ -186,6 +187,11 @@ class EDMManager(EDMManagerEndpointMixin, EDMManagerUserMixin):
             invalid_key_list = []
 
             edm_uri_key_list = sorted(edm_uri_dict.keys())
+            # we need to force keys of this to be ints, as it can be stored as json (no int keys)
+            for key in edm_authentication_dict:
+                if not isinstance(key, int):
+                    edm_authentication_dict[int(key)] = edm_authentication_dict[key]
+                    edm_authentication_dict.pop(key)
             edm_authentication_key_list = sorted(edm_authentication_dict.keys())
 
             for key in edm_uri_key_list:
@@ -225,6 +231,7 @@ class EDMManager(EDMManagerEndpointMixin, EDMManagerUserMixin):
                     invalid_key_list.append(key)
 
             if len(invalid_key_list) > 0:
+                log.error('Invalid keys %r' % (invalid_key_list,))
                 raise ValueError('Invalid keys provided')
 
         except Exception as exception:
