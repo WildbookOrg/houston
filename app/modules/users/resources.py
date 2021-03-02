@@ -233,7 +233,51 @@ class AdminUserInitialized(Resource):
                 is_admin=True,
                 update=True,
             )
-            log.info('Success creating startup admin user via API: %r.' % (admin,))
+            log.info(
+                'Success creating startup (houston) admin user via API: %r.' % (admin,)
+            )
+
+            # now we attempt to create on edm as well
+            from flask import current_app
+            import requests
+            import json
+
+            edm_data = {
+                'admin_user_initialized': {
+                    'email': email,
+                    'password': password,
+                    'username': email,
+                }
+            }
+            target = 0  # TODO will we create admin on other targets?
+            if not current_app.edm.initialized:
+                log.debug('Pseudo-initializing for admin-creation')
+                current_app.edm.sessions = {}
+                current_app.edm.sessions[target] = requests.Session()
+                current_app.edm._parse_config_edm_uris()
+            data = current_app.edm._get(
+                'configuration.init',
+                json.dumps(edm_data),
+                target=target,
+                ensure_initialized=False,
+                decode_as_object=False,
+                decode_as_dict=True,
+            )
+            if data.get('success', False):
+                edm_auth = current_app.config.get('EDM_AUTHENTICATIONS', {})
+                edm_auth[int(target)] = {'email': email, 'password': password}
+                from app.extensions.config.models import HoustonConfig
+
+                HoustonConfig.set('EDM_AUTHENTICATIONS', edm_auth)
+                log.info(
+                    'Success creating startup (edm) admin user via API: %r. (saved credentials in HoustonConfig)'
+                    % (email,)
+                )
+            else:
+                log.info(
+                    'Failed creating startup (edm) admin user via API; maybe OK. (response %r)'
+                    % (data)
+                )
 
         return {'initialized': True}
 
