@@ -22,6 +22,30 @@ services:
     networks:
       - intranet
 
+  elasticsearch:
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.1
+    environment:
+      "discovery.type": single-node
+    networks:
+      - intranet
+
+  kibana:
+    # https://www.elastic.co/guide/en/kibana/current/docker.html
+    image: docker.elastic.co/kibana/kibana-oss:7.10.1
+    # environment:
+    #   ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    networks:
+      - intranet
+
+  logstash:
+    # https://www.elastic.co/guide/en/logstash/current/docker.html
+    image: docker.elastic.co/logstash/logstash-oss:7.10.1
+    networks:
+      - intranet
+
   redis:
     image: redis:latest
     networks:
