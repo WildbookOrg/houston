@@ -27,6 +27,10 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.1
     environment:
       "discovery.type": single-node
+    ports:
+      # development exposure, not exposed in production
+      - 9200:9200
+      - 9300:9300
     networks:
       - intranet
 
@@ -34,6 +38,7 @@ services:
     # https://www.elastic.co/guide/en/kibana/current/docker.html
     image: docker.elastic.co/kibana/kibana-oss:7.10.1
     # environment:
+    #   # defaults to ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     #   ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     ports:
       - 5601:5601
@@ -43,6 +48,18 @@ services:
   logstash:
     # https://www.elastic.co/guide/en/logstash/current/docker.html
     image: docker.elastic.co/logstash/logstash-oss:7.10.1
+    # command: [ '-f', '/etc/logstash/conf.d', '--log.level', 'debug' ]
+    command: [ '-f', '/etc/logstash/conf.d' ]
+    volumes:
+      - ./logstash/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint
+      # - ./logstash/pipelines.yml:/etc/logstash/pipelines.yml
+      - ./logstash/pipelines:/etc/logstash/conf.d
+    environment:
+      ELASTICSEARCH_HOST: "elasticsearch"
+      WILDBOOK_DB_HOST: "db"
+      WILDBOOK_DB_NAME: "${WILDBOOK_DB_NAME}"
+      WILDBOOK_DB_USER: "${WILDBOOK_DB_USER}"
+      WILDBOOK_DB_PASSWORD: "${WILDBOOK_DB_PASSWORD}"
     networks:
       - intranet
 

@@ -1,0 +1,2 @@
+- pipeline.id: marked-individual-from-wildbook-db-to-es
+  path.config: “/etc/logstash/conf.d/wildbook-markedindividual.conf”
