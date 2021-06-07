@@ -129,6 +129,7 @@ services:
       GIT_PUBLIC_NAME: "${GIT_PUBLIC_NAME}"
       GIT_EMAIL: "${GIT_EMAIL}"
       GITLAB_NAMESPACE: "${GITLAB_NAMESPACE}"
+      GITLAB_REMOTE_LOGIN_PAT: "${GITLAB_REMOTE_LOGIN_PAT}"
     volumes:
       - houston-var:/data
       - ./houston/docker-entrypoint-init.d:/docker-entrypoint-init.d

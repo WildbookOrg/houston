@@ -26,6 +26,11 @@ _main() {
     if [ "${GITLAB_REMOTE_URI:0:4}" != "http" ]; then
         echo "Not using gitlab, exit"
         exit
+    # Check for a predefined $GITLAB_REMOTE_LOGIN_PAT
+    # See also https://stackoverflow.com/a/13864829/176882
+    elif [ -z "${GITLAB_REMOTE_LOGIN_PAT+x}" ]; then
+        echo "Not setting up GitLab, because GITLAB_REMOTE_LOGIN_PAT is defined and has a value"
+        exit 0
     fi
 
     # Wait for gitlab to come online... this takes awhile, so we give feedback
