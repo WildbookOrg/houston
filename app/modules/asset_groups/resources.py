@@ -446,7 +446,7 @@ class AssetGroupSightingCommit(Resource):
     @api.response(BaseSightingSchema())
     def post(self, asset_group_sighting):
         from app.modules.utils import Cleanup
-        from app.modules.sightings.models import Sighting
+        from app.modules.sightings.models import Sighting, SightingStage
         from app.modules.encounters.models import Encounter
 
         if asset_group_sighting.stage != AssetGroupSightingStage.curation:
@@ -494,20 +494,20 @@ class AssetGroupSightingCommit(Resource):
             )
 
         sighting = Sighting(
+            stage=SightingStage.identification,
             guid=result_data['id'],
             version=result_data.get('version', 2),
         )
 
         # Add the assets for all of the encounters to the created sighting object
         # TODO removed until the delete side of it works
-        # for encounter in request_data['encounters']:
-        #     for reference in encounter['assetReferences']:
-        #         asset = asset_group.get_asset_for_file(reference)
-        #         assert asset
-        #         sighting.add_asset(asset)
+        asset_group = asset_group_sighting.asset_group
+        # for reference in request_data['assetReferences']:
+        #    asset = asset_group.get_asset_for_file(reference)
+        #    assert asset
+        #    sighting.add_asset(asset)
 
         cleanup.add_object(sighting)
-        asset_group = asset_group_sighting.asset_group
 
         for encounter_num in range(len(request_data['encounters'])):
             req_data = request_data['encounters'][encounter_num]
