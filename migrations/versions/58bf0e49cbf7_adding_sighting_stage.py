@@ -1,14 +1,14 @@
-"""empty message
+"""adding sighting stage
 
-Revision ID: 3c21643a83ec
-Revises: fa952f537929
-Create Date: 2021-06-07 19:17:04.977429
+Revision ID: 58bf0e49cbf7
+Revises: adb5d1a314bc
+Create Date: 2021-06-07 19:52:25.795223
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '3c21643a83ec'
-down_revision = 'fa952f537929'
+revision = '58bf0e49cbf7'
+down_revision = 'adb5d1a314bc'
 
 from alembic import op
 import sqlalchemy as sa
